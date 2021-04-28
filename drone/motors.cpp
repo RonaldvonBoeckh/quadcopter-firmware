@@ -19,7 +19,14 @@ void Motors::initialize() {
 
 }
 
-void Motors::update(ExtY_control_T throttles) {
+void Motors::kill(){
+	motor_rf.writeMicroseconds(MIN_PULSE_WIDTH);
+	motor_rb.writeMicroseconds(MIN_PULSE_WIDTH);
+	motor_lb.writeMicroseconds(MIN_PULSE_WIDTH);
+	motor_lf.writeMicroseconds(MIN_PULSE_WIDTH);
+}
+
+void Motors::update(ExtY_control_T* throttles) {
 	//compute pulse widths
 	float pulse_rf = throttles.motor_rf_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
 	float pulse_rb = throttles.motor_rb_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;

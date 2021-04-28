@@ -46,4 +46,9 @@ typedef struct {
 #define ALTITUDE_70CM 7
 #define ALTITUDE_80CM 8
 
+//altitude values
+#define LANDING_ALTITUDE 0.3
+#define LANDING_TOL = 0.05
+
+
 #endif

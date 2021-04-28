@@ -25,7 +25,7 @@ class Drone {
 		void land();
 		void calibrate();
 		void stream();
-		void default_control(ExtU_droneControl_T* control_inputs);
+		void reset_control_inputs(ExtU_droneControl_T* control_inputs);
 
 		BLEcom com;
 		Motors motors;
@@ -37,6 +37,14 @@ class Drone {
 
 
 };
+
+typedef struct{
+	float timeLast =  0;
+	float timeNow = 0;
+	float dt = 0;
+	int index = 0;
+	bool firstLoop = true;
+}timeData_t;
 
 #endif
 
