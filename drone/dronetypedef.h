@@ -1,7 +1,8 @@
 #ifndef DRONE_TYPES_HEADER
 #define DRONE_TYPES_HEADER
 
-#include <control.h>
+#include <droneControl.h>	//for control types from matlab generated code
+#include <BLEcom.h>		//for ble com params like packet length
 
 //struct for attitude angles
 typedef struct {
@@ -19,25 +20,39 @@ enum drone_state_t{
 	landing = 4,
 };
 
-//struct to keep track of input commands
-typedef struct {
-	bool new_val = false;
-	int cmd_val = 0;
-} cmd_t;
+typedef struct{
+	float x = 0;
+	float y = 0;
+	float z = 0;
+} vector3_t;
 
-//input command codes via bleuart
-#define CALIBRATE 1
-#define STREAM 2
-#define STREAM_STOP 3
-#define START_FLYING 4
-#define STOP_FLYING 5
-#define INPUT_COMMAND_CODE_MAX 5
+//class to keep track of commands
+class cmd_t{
+	private:
+		bool new_val = false;					//track if new val has been recieved
 
-//output command codes via bleuart
-#define CALIBRATE_DONE 1
-#define CALIBRATE_DONE_CMD "c1"
-#define LANDED 2
-#define LANDED_CMD "c2"
+	public:
+		char msg[BLE_PACKET_LENGTH + 1] = {0};
+
+		//to check if  new val was received
+		bool return_new_val(){
+			return new_val;
+		};
+
+		//returns pointer of char array with msg
+		char * read_msg(){
+			new_val = false;
+			return msg;
+		};
+
+		void new_val_rx(){
+			new_val = true;
+		};
+
+
+};
+
+
 
 //altitude command values
 #define ALTITUDE_40CM 4

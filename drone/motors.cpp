@@ -26,12 +26,12 @@ void Motors::kill(){
 	motor_lf.writeMicroseconds(MIN_PULSE_WIDTH);
 }
 
-void Motors::update(ExtY_control_T* throttles) {
+void Motors::update(ExtY_droneControl_T * throttles) {
 	//compute pulse widths
-	float pulse_rf = throttles.motor_rf_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
-	float pulse_rb = throttles.motor_rb_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
-	float pulse_lb = throttles.motor_lb_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
-	float pulse_lf = throttles.motor_lf_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
+	float pulse_rf = throttles->motor_rf_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
+	float pulse_rb = throttles->motor_rb_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
+	float pulse_lb = throttles->motor_lb_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
+	float pulse_lf = throttles->motor_lf_throttle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) + MIN_PULSE_WIDTH;
 
 	//Actuate motor values
 	motor_rf.writeMicroseconds(pulse_rf);

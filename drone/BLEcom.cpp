@@ -2,9 +2,7 @@
 #include <Arduino.h>
 
 //for input normal commands
-cmd_t cmd;
-//to track new altitude set point
-cmd_t altitude_set;
+extern cmd_t cmd;			//defined as global var in drone.cpp. Global beause it must be accesed by both drone class and this file
 
 BLEDfu  bledfu;  // OTA DFU service
 BLEDis  bledis;  // device information
@@ -15,12 +13,6 @@ bool connected;
 
 //constructor
 BLEcom::BLEcom(){
-	//set cmd structs to 0 and false
-	cmd.new_val = false;
-	cmd.cmd_val = 0;
-	altitude_set.new_val = false;
-	altitude_set.cmd_val = 0;
-	//ensure connected flag is false
 	connected = false;
 }
 
@@ -62,55 +54,14 @@ void BLEcom::start_adv(){
 
 /**
  * @brief callback function when data is received over bleuart
- * Pareses message and places info into the cmd or altitude_set cmd_t structs
+ * Placed message into a cmd_t struct
  * 
  */
 void rx_callback(){
 	//get data from buffer
-	char str[20+1] = { 0 };
-	bleuart.read(str, 20);
-
-	char in_val = str[1];
-	//parse to extract commands
-	//---------------------------------------
-	switch(str[0]){
-		case 'a':	//new altitude setpoint
-			altitude_set.new_val = true;
-			altitude_set.cmd_val = str[1] - '0';
-			switch(altitude_set.cmd_val){
-				case ALTITUDE_40CM:
-					altitude_set.cmd_val = 40;
-					break;
-				case ALTITUDE_50CM:
-					altitude_set.cmd_val = 50;
-					break;
-				case ALTITUDE_60CM:
-					altitude_set.cmd_val = 60;
-					break;
-				case ALTITUDE_70CM:
-					altitude_set.cmd_val = 70;
-					break;
-				case ALTITUDE_80CM:
-					altitude_set.cmd_val = 80;
-					break;
-				default:
-					altitude_set.cmd_val = -1;
-					altitude_set.new_val = false;	//if it got here, no allowed val was passed
-			}
-			break;
-		
-		case 'c':	//standard command
-			cmd.cmd_val = str[1] - '0';
-			if(cmd.cmd_val >= 1 && cmd.cmd_val <= INPUT_COMMAND_CODE_MAX){
-				cmd.new_val = true;
-			}
-			else{
-				cmd.cmd_val = -1;
-				cmd.new_val = false;
-			}
-			break;
-
-	}
+	bleuart.read(cmd.msg, BLE_PACKET_LENGTH);
+	//set new command to true
+	cmd.new_val_rx();
 }
 
 /**
@@ -128,6 +79,7 @@ void connect_callback(uint16_t conn_handle){
 void disconnect_callback(uint16_t conn_handle, uint8_t reason){
 	connected = false;
 }
+
 /**
  * @brief initialize the ble uart service using bluefruit library
  * 
@@ -142,7 +94,7 @@ void BLEcom::ble_uart_init(){
 	//init ble
 	Bluefruit.begin(1,0);   //peripheral=1, central=0
 	Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-	Bluefruit.setName("Drone");
+	Bluefruit.setName("Quadcopter");
 	//Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
 	Bluefruit.Periph.setConnectCallback(connect_callback);
 	Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -152,7 +104,7 @@ void BLEcom::ble_uart_init(){
 
 	// Configure and Start Device Information Service
 	bledis.setManufacturer("Adafruit Industries");
-	bledis.setModel("Bluefruit Feather52");
+	bledis.setModel("Bluefruit FeatherSense52");
 	bledis.begin();
 
 	// Configure and Start BLE Uart Service
@@ -166,97 +118,17 @@ void BLEcom::ble_uart_init(){
 
 	// Set up and start advertising
 	BLEcom::start_adv();   //function which sets advertising params
-
-	Serial.println("Initialized ble service class");
 }
 
 /**
- * @brief sends attitude and altitude data via bleuart
+ * @brief send a message in string format
  * 
- * @param attitude struct containing current roll,pitch,yaw estimates
- * @param alitude float containing current altitude estimate
- * 
- * outputs in form "s roll pitch yaw altitude". d is so receiving end knows its state information
+ * @param msg string msg, max 20 bytes long to be sent over bleuart
  */
-void BLEcom::send_state(attitude_t attitude, float altitude, float dt){
-	String roll_s = String(attitude.roll);
-	String pitch_s = String(attitude.pitch);
-	String yaw_s = String(attitude.yaw);
-	String altitude_s = String(altitude);
-	String dt_s = String(dt);
-
-	String msg = String("s " + roll_s + " " + pitch_s + " " + yaw_s + " " + altitude_s + " " + dt_s);
-
+void BLEcom::send_msg(String msg){
 	bleuart.print(msg);
 }
 
-/**
- * @brief send a message based on the msg code defined in <drone.h>
- * 
- * @param cmd_code code of cmd to send via bleuart, defined in <drone.h>
- */
-void BLEcom::send_cmd(int cmd_code){
-
-	if(connected){
-		switch(cmd_code){
-			case CALIBRATE_DONE:
-				bleuart.print(CALIBRATE_DONE_CMD);
-				break;
-			
-			case LANDED:
-				bleuart.print(LANDED_CMD);
-				break;
-		}
-	}
-}
-
-/**
- * @brief send a debug msg to the app instead of using HW serial
- * 
- * @param debug_msg arduino string class, message to be send via bleuart. keep under 20 digits
- */
-void BLEcom::send_debug(String debug_msg){
-	String outString = String("d: " + debug_msg);
-	bleuart.print(outString);
-}
-
-/**
- * @brief gets the command struct
- * 
- * @return int returns command numbr, and -1 if not new command was found
- */
-int BLEcom::get_cmd(){
-	int return_val = 0;
-
-	if(cmd.new_val == true){
-		cmd.new_val = false;		//no longer new val
-		return_val = cmd.cmd_val;
-		cmd.cmd_val = 0;			//set to 0 so it isnt read 2x
-		return return_val;
-	}
-	else{
-		return -1;			//not new val, returns -1
-	}
-}
-
-/**
- * @brief gets altitude value
- * 
- * @return int altitude set in cm, range 40-80. returns -1 if no new value is found
- */
-float BLEcom::get_altitude(){
-	float return_val = 0;
-
-	if(altitude_set.new_val == true){
-		altitude_set.new_val = false;
-		return_val = altitude_set.cmd_val * 0.01;		//return val from cm->m
-		altitude_set.cmd_val = -1;
-		return return_val;
-	}
-	else{
-		return -1;
-	}
-}
 
 bool BLEcom::is_connected(){
 	return connected;

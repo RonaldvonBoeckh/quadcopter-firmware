@@ -8,13 +8,13 @@
 
 #include <andrewboard.h>
 #include <Servo.h>
-#include <drone.h>
+
 
 class Motors {
 	public:
 
 		void initialize();
-		void update(ExtY_control_T throttles);
+		void update(ExtY_droneControl_T * throttles);
 		void kill();
 		void detach();
 		

@@ -1,9 +1,13 @@
 #ifndef BLECOM_HEADER
 #define BLECOM_HEADER
 
+#define BLE_PACKET_LENGTH 20
+
 #include <dronetypedef.h>
 
 #include <bluefruit.h>
+
+
 
 void rx_callback();
 
@@ -17,15 +21,7 @@ class BLEcom{
 	public:
 		void ble_uart_init();
 
-		void send_state(attitude_t attitude, float altitude, float dt);
-
-		void send_cmd(int cmd_code);
-
-		void send_debug(String debug_msg);
-
-		int get_cmd();
-
-		float get_altitude();
+		void send_msg(String msg);
 
 		bool is_connected();
 		
