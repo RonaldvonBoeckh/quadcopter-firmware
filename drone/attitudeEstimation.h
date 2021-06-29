@@ -18,6 +18,7 @@ class AttitudeEstimation{
 	public:
 		void init();
 		void step(attitude_t * attitude, float dt);
+		double acc_resultant();
 		void gyro_bias_calibrate(int num_samples);
 		AttitudeEstimation();
 		~AttitudeEstimation();

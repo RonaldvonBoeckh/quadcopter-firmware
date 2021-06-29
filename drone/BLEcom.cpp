@@ -94,7 +94,7 @@ void BLEcom::ble_uart_init(){
 	//init ble
 	Bluefruit.begin(1,0);   //peripheral=1, central=0
 	Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-	Bluefruit.setName("Quadcopter");
+	Bluefruit.setName("Shotgun Schnitzel");
 	//Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
 	Bluefruit.Periph.setConnectCallback(connect_callback);
 	Bluefruit.Periph.setDisconnectCallback(disconnect_callback);

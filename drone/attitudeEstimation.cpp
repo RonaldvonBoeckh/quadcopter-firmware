@@ -28,6 +28,7 @@ API:
 
 #include <attitudeEstimation.h>
 #include <Adafruit_LSM6DS33.h>		//imu sensor
+#include <math.h>
 
 void AttitudeEstimation::init(){
 	lsm6.begin_I2C();
@@ -35,6 +36,15 @@ void AttitudeEstimation::init(){
 	lsm6.setAccelDataRate(LSM6DS_RATE_208_HZ);
 	lsm6.setGyroRange(LSM6DS_GYRO_RANGE_500_DPS);
 	lsm6.setGyroDataRate(LSM6DS_RATE_208_HZ);		//>= loop rate ideally
+}
+
+double AttitudeEstimation::acc_resultant(){
+	sensors_event_t accel;
+	sensors_event_t gyro;
+	sensors_event_t temp;
+	lsm6.getEvent(&accel, &gyro, &temp);
+
+	return sqrt(pow(accel.acceleration.x,2) + pow(accel.acceleration.y,2) + pow(accel.acceleration.z,2));
 }
 
 /**

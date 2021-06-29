@@ -6,7 +6,7 @@ void PressureAltitude::init(){
 	bmp_pressure = bmp.getPressureSensor();
 	bmp.begin();
 	bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-				Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+				Adafruit_BMP280::SAMPLING_NONE,     /* Temp. oversampling */
 				Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
 				Adafruit_BMP280::FILTER_X16,      /* Filtering. */
 				Adafruit_BMP280::STANDBY_MS_1); /* Standby time. */
@@ -32,11 +32,17 @@ void PressureAltitude::setAltitude(float current_altitude){
 	Serial.print(ref_pressure);
 }
 
-void PressureAltitude::getAltitude(float * altitude){
+float PressureAltitude::getRefPressure(){
+	return ref_pressure;
+}
+
+
+void PressureAltitude::getAltitude(float * altitude, float * pressure){
 	sensors_event_t pressure_event;
 	bmp_pressure->getEvent(&pressure_event);
+	*pressure = pressure_event.pressure;
 	//using barometric formula
-	*altitude = ALTITUDE_COEFF * (1 - pow((pressure_event.pressure*100 / ref_pressure), (1 / PRESSURE_EXP)) );
+	*altitude = ALTITUDE_COEFF * (1 - pow((*pressure*100 / ref_pressure), (1 / PRESSURE_EXP)) );
 }
 
 PressureAltitude::PressureAltitude(){

@@ -13,7 +13,8 @@ class PressureAltitude{
 	public:
 		void init();
 		void setAltitude(float current_altitude);
-		void getAltitude(float * altitude);
+		float getRefPressure();
+		void getAltitude(float * altitude, float * pressure);
 		PressureAltitude();
 
 	private:
